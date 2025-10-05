@@ -68,9 +68,10 @@ Guide complet pour intégrer l'API du simulateur ROI dans Webflow.
    - ID : `maturity`
    - Options : `low`, `medium`, `high`
 
-### **Bouton de Calcul**
-- ID : `calculate-btn`
-- Texte : "Calculer mon ROI"
+### **⚡ Calcul Automatique**
+**Pas besoin de bouton !** Le calcul se fait automatiquement à chaque changement de paramètre.
+
+Le code JavaScript écoute tous les champs et recalcule le ROI en temps réel (avec un délai de 500ms pour éviter trop d'appels API).
 
 ---
 
@@ -294,20 +295,53 @@ function showError(message) {
 }
 
 // ============================================
-// EVENT LISTENER
+// EVENT LISTENERS - CALCUL AUTOMATIQUE
 // ============================================
 document.addEventListener('DOMContentLoaded', function() {
-  const calculateBtn = document.getElementById('calculate-btn');
-  
-  if (calculateBtn) {
-    calculateBtn.addEventListener('click', function(e) {
-      e.preventDefault();
-      calculateROI();
-    });
-  }
+  // Liste des champs à surveiller
+  const fields = [
+    'sector',
+    'employees', 
+    'processes', 
+    'timePerTask',
+    'hourlyCost',
+    'currentAutomation',
+    'targetAutomation',
+    'maturity'
+  ];
+
+  // Ajouter un listener sur chaque champ
+  fields.forEach(fieldId => {
+    const field = document.getElementById(fieldId);
+    if (field) {
+      // Pour les selects : 'change'
+      // Pour les inputs : 'input' (temps réel)
+      const eventType = field.tagName === 'SELECT' ? 'change' : 'input';
+      
+      field.addEventListener(eventType, function() {
+        // Debounce pour éviter trop d'appels API
+        clearTimeout(window.calcTimeout);
+        window.calcTimeout = setTimeout(() => {
+          calculateROI();
+        }, 500); // Attendre 500ms après la dernière modification
+      });
+    }
+  });
+
+  // Calcul initial au chargement
+  calculateROI();
 });
 </script>
 ```
+
+### **⚡ Comment ça Fonctionne**
+
+1. **Détection automatique** : Chaque champ (select, input, slider) est surveillé
+2. **Debouncing** : Attente de 500ms après la dernière modification avant de calculer
+3. **Temps réel** : Les résultats se mettent à jour automatiquement
+4. **Pas de bouton** : L'utilisateur voit les résultats instantanément
+
+**Exemple :** Si l'utilisateur change le nombre d'employés de 100 → 250, le ROI se recalcule automatiquement 500ms après qu'il ait arrêté de bouger le slider.
 
 ---
 
