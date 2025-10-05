@@ -123,12 +123,16 @@ function attachWebflowListeners() {
 
         ['change', 'input', 'blur', 'keyup'].forEach(eventType => {
             field.addEventListener(eventType, function() {
-                console.log(`🎯 Event ${eventType} sur ${fieldId}, valeur:`, this.value || this.getAttribute('data-value'));
-                clearTimeout(calcTimeout);
-                calcTimeout = setTimeout(() => {
-                    console.log('📊 Recalcul déclenché par:', fieldId);
-                    calculateROI();
-                }, 300);
+                try {
+                    console.log(`🎯 Event ${eventType} sur ${fieldId}, valeur:`, this.value || this.getAttribute('data-value'));
+                    clearTimeout(calcTimeout);
+                    calcTimeout = setTimeout(() => {
+                        console.log('📊 Recalcul déclenché par:', fieldId);
+                        calculateROI();
+                    }, 300);
+                } catch (error) {
+                    console.error(`❌ Erreur event listener ${fieldId}:`, error);
+                }
             });
         });
     });
@@ -198,41 +202,59 @@ async function calculateROI() {
 }
 
 function displayResults(results) {
-    hideError();
-    showResults();
-    animateValue('result-roi', results.roiPercentage, '%', results.roiPercentage >= 0 ? '+' : '');
-    animateValue('result-savings', results.yearlySavings, ' €', '', true);
-    animateValue('result-payback', results.paybackWeeks, ' sem');
-    animateValue('result-time', results.timeSaved, 'h');
-    animateValue('result-errors', results.errorReduction, '%', '-');
-    animateValue('result-productivity', results.productivityGain, '%', '+');
+    try {
+        console.log('📊 displayResults appelé avec:', results);
+        hideError();
+        showResults();
+        animateValue('result-roi', results.roiPercentage, '%', results.roiPercentage >= 0 ? '+' : '');
+        animateValue('result-savings', results.yearlySavings, ' €', '', true);
+        animateValue('result-payback', results.paybackWeeks, ' sem');
+        animateValue('result-time', results.timeSaved, 'h');
+        animateValue('result-errors', results.errorReduction, '%', '-');
+        animateValue('result-productivity', results.productivityGain, '%', '+');
+        console.log('✅ displayResults terminé');
+    } catch (error) {
+        console.error('❌ Erreur dans displayResults:', error);
+        console.error('❌ Stack:', error.stack);
+    }
 }
 
 function animateValue(elementId, targetValue, suffix = '', prefix = '', formatNumber = false) {
-    const element = document.getElementById(elementId);
-    if (!element) return;
-
-    const duration = 1000;
-    const startTime = performance.now();
-
-    function update(currentTime) {
-        const elapsed = currentTime - startTime;
-        const progress = Math.min(elapsed / duration, 1);
-        const easeOutQuad = progress * (2 - progress);
-        const currentValue = Math.round(targetValue * easeOutQuad);
-        
-        const displayValue = formatNumber 
-            ? currentValue.toLocaleString('fr-FR') 
-            : currentValue;
-        
-        element.textContent = prefix + displayValue + suffix;
-
-        if (progress < 1) {
-            requestAnimationFrame(update);
+    try {
+        const element = document.getElementById(elementId);
+        if (!element) {
+            console.warn(`⚠️ Element ${elementId} non trouvé pour animation`);
+            return;
         }
-    }
 
-    requestAnimationFrame(update);
+        const duration = 1000;
+        const startTime = performance.now();
+
+        function update(currentTime) {
+            try {
+                const elapsed = currentTime - startTime;
+                const progress = Math.min(elapsed / duration, 1);
+                const easeOutQuad = progress * (2 - progress);
+                const currentValue = Math.round(targetValue * easeOutQuad);
+                
+                const displayValue = formatNumber 
+                    ? currentValue.toLocaleString('fr-FR') 
+                    : currentValue;
+                
+                element.textContent = prefix + displayValue + suffix;
+
+                if (progress < 1) {
+                    requestAnimationFrame(update);
+                }
+            } catch (error) {
+                console.error(`❌ Erreur animation ${elementId}:`, error);
+            }
+        }
+
+        requestAnimationFrame(update);
+    } catch (error) {
+        console.error(`❌ Erreur animateValue ${elementId}:`, error);
+    }
 }
 
 // Fonction getValue améliorée pour sliders Webflow
