@@ -1,29 +1,51 @@
-# 🎯 Code JavaScript pour Webflow - Version Compatible
+# 🎯 Fix pour Sliders Webflow
 
-## 📋 Instructions
+## Code JavaScript Compatible avec les Sliders Webflow
 
-**Copie ce code dans Webflow :**
-- **Page Settings** → **Custom Code** → **Before </body> tag**
-
----
-
-## 💻 Code à Copier-Coller
+Copie ce code dans **Webflow → Page Settings → Before </body> tag**
 
 ```html
 <script>
 // ============================================
-// SIMULATEUR ROI - WEBFLOW COMPATIBLE
+// SIMULATEUR ROI - COMPATIBLE SLIDERS WEBFLOW
 // ============================================
 
 const API_URL = 'https://alva-roi-simulator-production.up.railway.app';
 let calcTimeout = null;
 
 document.addEventListener('DOMContentLoaded', function() {
-    console.log('🚀 Simulateur ROI initialisé');
+    console.log('🚀 Simulateur ROI initialisé (Sliders Webflow)');
     displayDefaultResults();
     attachWebflowListeners();
+    setupSliderObservers(); // Nouveau : Observer les sliders
     setTimeout(() => calculateROI(), 500);
 });
+
+// Observer les changements des sliders Webflow
+function setupSliderObservers() {
+    // Trouver tous les éléments avec data-value
+    const sliderElements = document.querySelectorAll('[data-value]');
+    
+    sliderElements.forEach(element => {
+        // Observer les changements d'attribut data-value
+        const observer = new MutationObserver(function(mutations) {
+            mutations.forEach(function(mutation) {
+                if (mutation.type === 'attributes' && mutation.attributeName === 'data-value') {
+                    console.log('📊 Slider changé:', element.getAttribute('data-value'));
+                    clearTimeout(calcTimeout);
+                    calcTimeout = setTimeout(() => calculateROI(), 300);
+                }
+            });
+        });
+        
+        observer.observe(element, {
+            attributes: true,
+            attributeFilter: ['data-value']
+        });
+    });
+    
+    console.log('👀 Observing', sliderElements.length, 'sliders');
+}
 
 function displayDefaultResults() {
     const defaults = {
@@ -159,27 +181,43 @@ function animateValue(elementId, targetValue, suffix = '', prefix = '', formatNu
     requestAnimationFrame(update);
 }
 
+// Fonction getValue améliorée pour sliders Webflow
 function getValue(id) {
-    const el = document.getElementById(id);
+    // 1. Essayer de trouver l'élément avec l'ID
+    let el = document.getElementById(id);
+    
+    // 2. Si pas trouvé, chercher dans les data-name
+    if (!el) {
+        el = document.querySelector(`[data-name="${id}"]`);
+    }
+    
     if (!el) return null;
     
-    // Pour les selects
+    // 3. Pour les selects
     if (el.tagName === 'SELECT') {
         return el.options[el.selectedIndex]?.value || el.value;
     }
     
-    // Pour les sliders Webflow (chercher dans le parent)
-    const sliderWrapper = el.closest('.slider-value-frame-font-card-text-hd-md-text-hd-md-0');
-    if (sliderWrapper) {
-        const valueElement = sliderWrapper.querySelector('[data-value]');
-        if (valueElement) {
-            const dataValue = valueElement.getAttribute('data-value');
-            if (dataValue) return dataValue;
-        }
+    // 4. Chercher data-value dans l'élément ou ses enfants
+    let dataValue = el.getAttribute('data-value');
+    if (dataValue) return dataValue;
+    
+    // 5. Chercher dans les enfants
+    const childWithDataValue = el.querySelector('[data-value]');
+    if (childWithDataValue) {
+        dataValue = childWithDataValue.getAttribute('data-value');
+        if (dataValue) return dataValue;
     }
     
-    // Pour les inputs normaux
-    return el.value || el.getAttribute('value') || el.getAttribute('data-value');
+    // 6. Chercher dans le parent (pour les wrappers Webflow)
+    const parent = el.closest('[data-value]');
+    if (parent) {
+        dataValue = parent.getAttribute('data-value');
+        if (dataValue) return dataValue;
+    }
+    
+    // 7. Fallback sur .value
+    return el.value || el.getAttribute('value');
 }
 
 function updateDisplay(id, value) {
@@ -208,13 +246,28 @@ function showError(message) {
     }
 }
 
-// Debug
+// Debug amélioré
 window.debugSimulator = function() {
-    console.log('=== DEBUG ===');
-    console.log('sector:', getValue('sector'));
-    console.log('employees:', getValue('employees'));
-    console.log('processes:', getValue('processes'));
-    console.log('timePerTask:', getValue('timePerTask'));
+    console.log('=== DEBUG SIMULATEUR ===');
+    
+    // Tester chaque champ
+    ['sector', 'employees', 'processes', 'timePerTask'].forEach(id => {
+        const value = getValue(id);
+        console.log(`${id}:`, value);
+        
+        // Afficher aussi l'élément trouvé
+        const el = document.getElementById(id) || document.querySelector(`[data-name="${id}"]`);
+        if (el) {
+            console.log(`  → Element:`, el);
+            console.log(`  → data-value:`, el.getAttribute('data-value'));
+        }
+    });
+    
+    // Afficher tous les éléments avec data-value
+    console.log('\n=== SLIDERS WEBFLOW ===');
+    document.querySelectorAll('[data-value]').forEach((el, i) => {
+        console.log(`Slider ${i}:`, el.getAttribute('data-value'), el);
+    });
 };
 
 console.log('💡 Tape debugSimulator() pour débugger');
@@ -223,72 +276,47 @@ console.log('💡 Tape debugSimulator() pour débugger');
 
 ---
 
-## ✨ Améliorations Webflow
+## 🎯 Améliorations Clés
 
-### **1. Multiple Event Listeners**
+### **1. MutationObserver**
 ```javascript
-['change', 'input', 'blur', 'keyup'].forEach(eventType => {
-    field.addEventListener(eventType, ...);
+observer.observe(element, {
+    attributes: true,
+    attributeFilter: ['data-value']
 });
 ```
-Écoute **4 types d'événements** pour compatibilité maximale
+Détecte automatiquement quand Webflow change `data-value`
 
-### **2. getValue() Amélioré**
+### **2. getValue() Ultra-Robuste**
 ```javascript
-return el.value || el.getAttribute('value') || el.getAttribute('data-value');
+// Cherche dans 7 endroits différents :
+1. getElementById(id)
+2. querySelector([data-name="id"])
+3. element.getAttribute('data-value')
+4. element.querySelector('[data-value]')
+5. element.closest('[data-value]')
+6. element.value
+7. element.getAttribute('value')
 ```
-Récupère la valeur même si l'input est `disabled` ou utilise `data-value`
 
-### **3. Form Submit Blocker**
+### **3. Debug Amélioré**
 ```javascript
-form.addEventListener('submit', function(e) {
-    e.preventDefault();
-    return false;
-});
+debugSimulator()
+// Affiche TOUS les sliders et leurs valeurs
 ```
-Empêche Webflow de soumettre le formulaire
-
-### **4. Debounce Réduit**
-```javascript
-setTimeout(() => calculateROI(), 300); // 300ms au lieu de 500ms
-```
-Plus réactif pour Webflow
 
 ---
 
 ## 🧪 Test
 
-**Après avoir copié le code, ouvre la console (F12) et tape :**
+1. **Copie le nouveau code**
+2. **Remplace l'ancien dans Webflow**
+3. **Publie**
+4. **Ouvre la console (F12)**
+5. **Tape :** `debugSimulator()`
 
-```javascript
-debugSimulator()
-```
-
-Tu verras toutes les valeurs des champs.
-
----
-
-## 🎯 Checklist
-
-- [ ] Copier le code dans **Before </body> tag**
-- [ ] Publier le site Webflow
-- [ ] Ouvrir la console (F12)
-- [ ] Vérifier "🚀 Simulateur ROI initialisé"
-- [ ] Changer un champ
-- [ ] Vérifier "📊 Recalcul: [nom du champ]"
-- [ ] Voir les résultats se mettre à jour
+Tu verras tous les sliders et leurs valeurs !
 
 ---
 
-## 🔧 Debug
-
-Si ça ne marche pas :
-
-1. **Console (F12)**
-2. Tape : `debugSimulator()`
-3. Vérifie les valeurs affichées
-4. Envoie-moi le résultat
-
----
-
-**Ce code est 100% compatible Webflow !** 🎯
+**Ce code détecte automatiquement les sliders Webflow et leurs changements !** 🎯
