@@ -1,0 +1,219 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Simulateur ROI IA - Alva</title>
+    <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+    <div class="container">
+        <!-- Header -->
+        <header class="header">
+            <h1>🚀 Simulateur ROI IA</h1>
+            <p class="subtitle">Calculez votre retour sur investissement IA en temps réel</p>
+        </header>
+
+        <!-- Main Content -->
+        <div class="simulator-wrapper">
+            <!-- Form Section -->
+            <div class="form-section">
+                <h2>Vos Paramètres</h2>
+
+                <!-- Secteur -->
+                <div class="form-group">
+                    <label for="sector">
+                        <span class="label-text">Secteur d'activité</span>
+                    </label>
+                    <select id="sector" class="select-input">
+                        <option value="general">Multi-fonctions / Général</option>
+                        <option value="finance">Finance & Comptabilité</option>
+                        <option value="hr">Ressources Humaines</option>
+                        <option value="operations">Opérations & Logistique</option>
+                        <option value="sales">Commercial & Ventes</option>
+                        <option value="support">Support Client & Service</option>
+                        <option value="marketing">Marketing & Communication</option>
+                        <option value="it">IT & Développement</option>
+                        <option value="legal">Juridique & Compliance</option>
+                    </select>
+                </div>
+
+                <!-- Employés -->
+                <div class="form-group">
+                    <label for="employees">
+                        <span class="label-text">Nombre d'employés</span>
+                        <span class="label-value" id="employees-value">250</span>
+                    </label>
+                    <input type="range" id="employees" min="1" max="1000" value="250" step="1">
+                    <div class="range-labels">
+                        <span>1</span>
+                        <span>1000</span>
+                    </div>
+                </div>
+
+                <!-- Processus -->
+                <div class="form-group">
+                    <label for="processes">
+                        <span class="label-text">Processus à automatiser</span>
+                        <span class="label-value" id="processes-value">3</span>
+                    </label>
+                    <input type="range" id="processes" min="1" max="10" value="3" step="1">
+                    <div class="range-labels">
+                        <span>1</span>
+                        <span>10</span>
+                    </div>
+                </div>
+
+                <!-- Temps par processus -->
+                <div class="form-group">
+                    <label for="timePerTask">
+                        <span class="label-text">Temps moyen par processus (h/jour)</span>
+                        <span class="label-value" id="timePerTask-value">2</span>
+                    </label>
+                    <input type="range" id="timePerTask" min="0.5" max="8" value="2" step="0.5">
+                    <div class="range-labels">
+                        <span>0.5</span>
+                        <span>8</span>
+                    </div>
+                </div>
+
+                <!-- Divider -->
+                <div class="divider">
+                    <span>Paramètres Avancés</span>
+                </div>
+
+                <!-- Maturité digitale -->
+                <div class="form-group">
+                    <label for="maturity">
+                        <span class="label-text">Maturité digitale</span>
+                    </label>
+                    <select id="maturity" class="select-input">
+                        <option value="low">Faible (peu d'outils digitaux)</option>
+                        <option value="medium" selected>Moyenne (outils standards)</option>
+                        <option value="high">Élevée (organisation data-driven)</option>
+                    </select>
+                </div>
+
+                <!-- Coût horaire -->
+                <div class="form-group">
+                    <label for="hourlyCost">
+                        <span class="label-text">Coût horaire moyen (€/h)</span>
+                        <span class="label-value" id="hourlyCost-value">40</span>
+                    </label>
+                    <input type="range" id="hourlyCost" min="20" max="150" value="40" step="5">
+                    <div class="range-labels">
+                        <span>20€</span>
+                        <span>150€</span>
+                    </div>
+                </div>
+
+                <!-- Automatisation actuelle -->
+                <div class="form-group">
+                    <label for="currentAutomation">
+                        <span class="label-text">Automatisation actuelle (%)</span>
+                        <span class="label-value" id="currentAutomation-value">15</span>
+                    </label>
+                    <input type="range" id="currentAutomation" min="0" max="80" value="15" step="5">
+                    <div class="range-labels">
+                        <span>0%</span>
+                        <span>80%</span>
+                    </div>
+                </div>
+
+                <!-- Objectif d'automatisation -->
+                <div class="form-group">
+                    <label for="targetAutomation">
+                        <span class="label-text">Objectif d'automatisation (%)</span>
+                        <span class="label-value" id="targetAutomation-value">60</span>
+                    </label>
+                    <input type="range" id="targetAutomation" min="30" max="95" value="60" step="5">
+                    <div class="range-labels">
+                        <span>30%</span>
+                        <span>95%</span>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Results Section -->
+            <div class="results-section" id="results-section">
+                <h2>Votre Potentiel ROI</h2>
+
+                <!-- Loading -->
+                <div id="loading" class="loading" style="display: none;">
+                    <div class="spinner"></div>
+                    <p>Calcul en cours...</p>
+                </div>
+
+                <!-- Error -->
+                <div id="error" class="error" style="display: none;">
+                    <p>Une erreur est survenue. Veuillez réessayer.</p>
+                </div>
+
+                <!-- Results Grid -->
+                <div id="results-grid" class="results-grid">
+                    <!-- ROI -->
+                    <div class="result-card primary">
+                        <div class="result-icon">📈</div>
+                        <div class="result-content">
+                            <h3>ROI</h3>
+                            <p class="result-value" id="result-roi">0%</p>
+                        </div>
+                    </div>
+
+                    <!-- Économies Annuelles -->
+                    <div class="result-card">
+                        <div class="result-icon">💰</div>
+                        <div class="result-content">
+                            <h3>Économies Annuelles</h3>
+                            <p class="result-value" id="result-savings">0 €</p>
+                        </div>
+                    </div>
+
+                    <!-- Temps de Retour -->
+                    <div class="result-card">
+                        <div class="result-icon">⏱️</div>
+                        <div class="result-content">
+                            <h3>Retour sur Investissement</h3>
+                            <p class="result-value" id="result-payback">0 sem</p>
+                        </div>
+                    </div>
+
+                    <!-- Temps Gagné -->
+                    <div class="result-card">
+                        <div class="result-icon">⚡</div>
+                        <div class="result-content">
+                            <h3>Temps Gagné / Mois</h3>
+                            <p class="result-value" id="result-time">0h</p>
+                        </div>
+                    </div>
+
+                    <!-- Réduction Erreurs -->
+                    <div class="result-card">
+                        <div class="result-icon">✅</div>
+                        <div class="result-content">
+                            <h3>Réduction d'Erreurs</h3>
+                            <p class="result-value" id="result-errors">0%</p>
+                        </div>
+                    </div>
+
+                    <!-- Productivité -->
+                    <div class="result-card">
+                        <div class="result-icon">🚀</div>
+                        <div class="result-content">
+                            <h3>Gain de Productivité</h3>
+                            <p class="result-value" id="result-productivity">0%</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Footer -->
+        <footer class="footer">
+            <p>Basé sur les études McKinsey, PwC, Deloitte, BCG, Gartner</p>
+        </footer>
+    </div>
+
+    <script src="app.js"></script>
+</body>
+</html>
