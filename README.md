@@ -65,7 +65,7 @@ L'API démarre sur `http://localhost:3000`
 ## 💻 Intégration Webflow
 
 ```javascript
-const API_URL = 'https://ton-api.railway.app';
+const API_URL = 'https://alva-roi-simulator-production.up.railway.app';
 
 async function calculateROI() {
   const response = await fetch(`${API_URL}/api/simulator/calculate`, {

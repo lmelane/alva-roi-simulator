@@ -143,7 +143,7 @@ Le code JavaScript écoute tous les champs et recalcule le ROI en temps réel (a
 // ============================================
 // CONFIGURATION
 // ============================================
-const API_URL = 'https://TON-API.railway.app'; // ⚠️ REMPLACER PAR TON URL
+const API_URL = 'https://alva-roi-simulator-production.up.railway.app';
 
 // ============================================
 // FONCTION PRINCIPALE
@@ -424,12 +424,12 @@ document.addEventListener('DOMContentLoaded', function() {
 
 Dans la console du navigateur (F12) :
 ```javascript
-fetch('https://TON-API.railway.app/health')
+fetch('https://alva-roi-simulator-production.up.railway.app/health')
   .then(r => r.json())
   .then(d => console.log(d));
 ```
 
-Devrait afficher : `{status: "OK", timestamp: "..."}`
+Devrait afficher : `{status: "OK", timestamp: "...", environment: "production"}`
 
 ### **Test 2 : Tester le Formulaire**
 
