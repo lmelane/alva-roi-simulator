@@ -79,13 +79,19 @@ function attachWebflowListeners() {
 
     fields.forEach(fieldId => {
         const field = document.getElementById(fieldId);
-        if (!field) return;
+        if (!field) {
+            console.warn(`⚠️ Champ ${fieldId} non trouvé`);
+            return;
+        }
+
+        console.log(`✅ Listener attaché sur: ${fieldId}`);
 
         ['change', 'input', 'blur', 'keyup'].forEach(eventType => {
             field.addEventListener(eventType, function() {
+                console.log(`🎯 Event ${eventType} sur ${fieldId}, valeur:`, this.value || this.getAttribute('data-value'));
                 clearTimeout(calcTimeout);
                 calcTimeout = setTimeout(() => {
-                    console.log('📊 Recalcul:', fieldId);
+                    console.log('📊 Recalcul déclenché par:', fieldId);
                     calculateROI();
                 }, 300);
             });
@@ -102,6 +108,8 @@ function attachWebflowListeners() {
 }
 
 async function calculateROI() {
+    console.log('🔄 calculateROI() appelé');
+    
     try {
         const sector = getValue('sector') || 'general';
         const employees = parseInt(getValue('employees')) || 250;
@@ -112,12 +120,14 @@ async function calculateROI() {
         const currentAutomation = parseInt(getValue('currentAutomation')) || null;
         const targetAutomation = parseInt(getValue('targetAutomation')) || null;
 
+        console.log('📊 Valeurs récupérées:', { sector, employees, processes, timePerTask });
+
         if (!sector || !employees || !processes || !timePerTask) {
-            console.warn('⚠️ Paramètres manquants');
+            console.warn('⚠️ Paramètres manquants:', { sector, employees, processes, timePerTask });
             return;
         }
 
-        console.log('📤 API:', { sector, employees, processes, timePerTask });
+        console.log('📤 Envoi API:', { sector, employees, processes, timePerTask });
 
         const requestData = {
             sector, employees, processes, timePerTask, maturity
@@ -143,8 +153,12 @@ async function calculateROI() {
         }
 
     } catch (error) {
-        console.error('❌ Erreur:', error);
+        console.error('❌ Erreur complète:', error);
+        console.error('❌ Stack:', error.stack);
         showError('Erreur de connexion');
+        
+        // Ne pas bloquer les futurs appels
+        return;
     }
 }
 
