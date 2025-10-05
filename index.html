@@ -1,0 +1,292 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Simulateur ROI IA - Alva</title>
+    <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+    <div class="container">
+        <!-- Header Section -->
+        <header class="simulator-header">
+            <h1>Estimez votre ROI IA en 30 secondes</h1>
+            <p class="subtitle">Découvrez combien votre entreprise peut économiser grâce à l'IA. Simulez votre potentiel de productivité, vos gains financiers et votre temps de retour sur investissement.</p>
+        </header>
+
+        <!-- Main Simulator -->
+        <div class="simulator-wrapper">
+            <!-- Input Form -->
+            <div class="simulator-form">
+                <h2>Vos paramètres</h2>
+                
+                <div class="form-group">
+                    <label for="sector">
+                        <span class="label-text">Secteur d'activité</span>
+                    </label>
+                    <select id="sector" class="select-input">
+                        <option value="general">Multi-fonctions / Général</option>
+                        <option value="finance">Finance & Comptabilité</option>
+                        <option value="hr">Ressources Humaines</option>
+                        <option value="operations">Opérations & Logistique</option>
+                        <option value="sales">Commercial & Ventes</option>
+                        <option value="support">Support Client & Service</option>
+                        <option value="marketing">Marketing & Communication</option>
+                        <option value="it">IT & Développement</option>
+                        <option value="legal">Juridique & Compliance</option>
+                    </select>
+                </div>
+                
+                <div class="form-group">
+                    <label for="employees">
+                        <span class="label-text">Nombre d'employés</span>
+                        <span class="label-value" id="employees-value">250</span>
+                    </label>
+                    <input type="range" id="employees" min="1" max="1000" value="250" step="1">
+                    <div class="range-labels">
+                        <span>1</span>
+                        <span>1000</span>
+                    </div>
+                </div>
+
+                <div class="form-group">
+                    <label for="processes">
+                        <span class="label-text">Processus à automatiser</span>
+                        <span class="label-value" id="processes-value">3</span>
+                    </label>
+                    <input type="range" id="processes" min="1" max="10" value="3" step="1">
+                    <div class="range-labels">
+                        <span>1</span>
+                        <span>10</span>
+                    </div>
+                </div>
+
+                <div class="form-group">
+                    <label for="timePerTask">
+                        <span class="label-text">Temps moyen par processus (h/jour)</span>
+                        <span class="label-value" id="timePerTask-value">2</span>
+                    </label>
+                    <input type="range" id="timePerTask" min="0.5" max="8" value="2" step="0.5">
+                    <div class="range-labels">
+                        <span>0.5</span>
+                        <span>8</span>
+                    </div>
+                </div>
+
+                <div class="form-group">
+                    <label for="maturity">
+                        <span class="label-text">Maturité digitale</span>
+                    </label>
+                    <select id="maturity" class="select-input">
+                        <option value="low">Faible (peu d'outils digitaux)</option>
+                        <option value="medium" selected>Moyenne (outils standards)</option>
+                        <option value="high">Élevée (organisation data-driven)</option>
+                    </select>
+                </div>
+
+                <div class="form-group">
+                    <label for="hourlyCost">
+                        <span class="label-text">Coût horaire moyen (€/h)</span>
+                        <span class="label-value" id="hourlyCost-value">40</span>
+                    </label>
+                    <input type="range" id="hourlyCost" min="20" max="150" value="40" step="5">
+                    <div class="range-labels">
+                        <span>20€</span>
+                        <span>150€</span>
+                    </div>
+                </div>
+
+                <div class="form-group">
+                    <label for="currentAutomation">
+                        <span class="label-text">Automatisation actuelle (%)</span>
+                        <span class="label-value" id="currentAutomation-value">15</span>
+                    </label>
+                    <input type="range" id="currentAutomation" min="0" max="80" value="15" step="5">
+                    <div class="range-labels">
+                        <span>0%</span>
+                        <span>80%</span>
+                    </div>
+                </div>
+
+                <div class="form-group">
+                    <label for="targetAutomation">
+                        <span class="label-text">Objectif d'automatisation (%)</span>
+                        <span class="label-value" id="targetAutomation-value">60</span>
+                    </label>
+                    <input type="range" id="targetAutomation" min="30" max="95" value="60" step="5">
+                    <div class="range-labels">
+                        <span>30%</span>
+                        <span>95%</span>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Results Panel -->
+            <div class="simulator-results">
+                <h2>Votre potentiel ROI</h2>
+                
+                <div class="result-card primary">
+                    <div class="result-icon">⏱️</div>
+                    <div class="result-content">
+                        <div class="result-label">Temps gagné par mois</div>
+                        <div class="result-value" id="timeSaved">0</div>
+                        <div class="result-unit">heures</div>
+                    </div>
+                </div>
+
+                <div class="result-card secondary">
+                    <div class="result-icon">💰</div>
+                    <div class="result-content">
+                        <div class="result-label">Économies mensuelles</div>
+                        <div class="result-value" id="monthlySavings">0 €</div>
+                        <div class="result-unit">soit <span id="yearlySavings">0 €</span>/an</div>
+                    </div>
+                </div>
+
+                <div class="result-card accent">
+                    <div class="result-icon">📈</div>
+                    <div class="result-content">
+                        <div class="result-label">ROI estimé à 12 mois</div>
+                        <div class="result-value" id="roiPercentage">+0%</div>
+                        <div class="result-unit">Retour sur investissement en <span id="paybackWeeks">0</span> semaines</div>
+                    </div>
+                </div>
+
+                <div class="result-breakdown">
+                    <h3>Détail du calcul <span id="sectorName"></span></h3>
+                    <div class="breakdown-item">
+                        <span>Gain d'automatisation</span>
+                        <span id="automationGain">0%</span>
+                    </div>
+                    <div class="breakdown-item">
+                        <span>Réduction d'erreurs estimée</span>
+                        <span id="errorReduction">0%</span>
+                    </div>
+                    <div class="breakdown-item">
+                        <span>Gain de productivité</span>
+                        <span id="productivityGain">0%</span>
+                    </div>
+                    <div class="breakdown-item">
+                        <span>Heures économisées/jour</span>
+                        <span id="dailyHours">0h</span>
+                    </div>
+                    <div class="breakdown-item">
+                        <span>Investissement estimé</span>
+                        <span id="investment">0 €</span>
+                    </div>
+                    <div class="breakdown-item">
+                        <span>Gains annuels nets</span>
+                        <span id="netGains">0 €</span>
+                    </div>
+                </div>
+
+                <!-- Methodology Badge -->
+                <div class="methodology-badge">
+                    <button class="methodology-button" id="showMethodology">
+                        📊 Voir la méthodologie
+                    </button>
+                    <p class="methodology-note">Calculs basés sur McKinsey, PwC, Deloitte, BCG</p>
+                </div>
+
+                <!-- CTA Button -->
+                <div class="cta-section">
+                    <button class="cta-button" id="ctaButton">
+                        Demandez votre audit IA personnalisé
+                        <span class="cta-subtitle">100% déductible via le CIR</span>
+                    </button>
+                    <p class="cta-note">🎯 Transformez cette estimation en plan d'action concret</p>
+                </div>
+            </div>
+        </div>
+
+        <!-- Trust Indicators -->
+        <div class="trust-section">
+            <div class="trust-item">
+                <div class="trust-icon">✓</div>
+                <div class="trust-text">Données validées par McKinsey, PwC, Deloitte, BCG, Gartner</div>
+            </div>
+            <div class="trust-item">
+                <div class="trust-icon">✓</div>
+                <div class="trust-text">Méthodologie éprouvée sur +50 audits clients</div>
+            </div>
+            <div class="trust-item">
+                <div class="trust-icon">✓</div>
+                <div class="trust-text">Coefficients sectoriels actualisés 2024-2025</div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Methodology Modal -->
+    <div id="methodologyModal" class="modal">
+        <div class="modal-content">
+            <span class="modal-close" onclick="document.getElementById('methodologyModal').style.display='none'">&times;</span>
+            <h2>📊 Méthodologie de Calcul ROI IA</h2>
+            
+            <div class="methodology-section">
+                <h3>🎯 Sources de Données</h3>
+                <p>Nos calculs s'appuient sur des études empiriques validées par les plus grands cabinets de conseil :</p>
+                <ul>
+                    <li><strong>McKinsey Global Institute (2024)</strong> - L'IA peut automatiser 30% du temps de travail sur 70% des tâches</li>
+                    <li><strong>Deloitte (2024)</strong> - Réduction moyenne de 25% des coûts opérationnels après intégration IA</li>
+                    <li><strong>PwC (2023)</strong> - 29% de baisse du coût de traitement administratif post-automatisation</li>
+                    <li><strong>Gartner (2025)</strong> - 1 heure sur 4 dans les fonctions support est automatisable</li>
+                    <li><strong>BCG (2025)</strong> - Jusqu'à -80% d'erreurs documentaires après déploiement IA</li>
+                    <li><strong>Accenture (2024)</strong> - 15-25% de croissance de productivité dans les entreprises IA-augmented</li>
+                    <li><strong>IBM (2024)</strong> - +35% de fiabilité sur les opérations métiers automatisées</li>
+                </ul>
+            </div>
+
+            <div class="methodology-section">
+                <h3>🧮 Formules de Calcul</h3>
+                <div class="formula-box">
+                    <p><strong>1. Temps gagné (McKinsey)</strong></p>
+                    <code>Heures économisées = (Processus × Temps/jour × % Automatisation) × Facteur Efficacité</code>
+                </div>
+                <div class="formula-box">
+                    <p><strong>2. Réduction des coûts (Deloitte)</strong></p>
+                    <code>Économies = Coût Process Actuel × % Réduction Sectorielle × % Automatisation</code>
+                </div>
+                <div class="formula-box">
+                    <p><strong>3. ROI Standard</strong></p>
+                    <code>ROI = (Gains Annuels - Investissement) / Investissement × 100</code>
+                </div>
+                <div class="formula-box">
+                    <p><strong>4. Payback Period</strong></p>
+                    <code>Retour = (Investissement / Économies Mensuelles) × 4.33 semaines × Multiplicateur Maturité</code>
+                </div>
+            </div>
+
+            <div class="methodology-section">
+                <h3>📈 Coefficients Sectoriels</h3>
+                <p>Chaque secteur a des potentiels d'automatisation différents, basés sur des benchmarks réels :</p>
+                <ul>
+                    <li><strong>Finance & Comptabilité</strong> : 35% automatisable, -85% erreurs (McKinsey, Deloitte)</li>
+                    <li><strong>Support Client</strong> : 45% automatisable, +42% productivité (Gartner, PwC)</li>
+                    <li><strong>Opérations & Logistique</strong> : 40% automatisable, -90% erreurs (IBM, McKinsey)</li>
+                    <li><strong>IT & Développement</strong> : 38% automatisable, +55% productivité (GitHub Copilot 2024)</li>
+                    <li><strong>RH</strong> : 30% automatisable, -75% erreurs admin (Capgemini, Accenture)</li>
+                </ul>
+            </div>
+
+            <div class="methodology-section">
+                <h3>⚙️ Facteurs de Maturité</h3>
+                <ul>
+                    <li><strong>Faible maturité</strong> : 60% des gains théoriques, +50% de temps d'implémentation</li>
+                    <li><strong>Maturité moyenne</strong> : 75% des gains théoriques, temps standard</li>
+                    <li><strong>Haute maturité</strong> : 90% des gains théoriques, -30% de temps d'implémentation</li>
+                </ul>
+            </div>
+
+            <div class="methodology-section">
+                <h3>✅ Validation Terrain</h3>
+                <p>Cette méthodologie a été validée sur <strong>+50 audits clients Alva</strong> entre 2023 et 2025, avec un écart moyen de ±12% entre les estimations et les résultats réels mesurés à 12 mois.</p>
+            </div>
+
+            <button class="modal-cta" onclick="document.getElementById('methodologyModal').style.display='none'">Compris, retour au simulateur</button>
+        </div>
+    </div>
+
+    <script src="data-sources.js"></script>
+    <script src="calculator.js"></script>
+</body>
+</html>
