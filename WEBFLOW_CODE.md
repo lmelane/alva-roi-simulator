@@ -61,30 +61,34 @@ function initializeDefaultValues() {
     });
 }
 
-// Observer les changements des sliders Webflow
+// Observer les changements des sliders Webflow avec polling
+let lastSliderValues = {};
+
 function setupSliderObservers() {
-    // Trouver tous les éléments avec data-value
-    const sliderElements = document.querySelectorAll('[data-value]');
+    console.log('👀 Démarrage du polling des sliders');
     
-    sliderElements.forEach(element => {
-        // Observer les changements d'attribut data-value
-        const observer = new MutationObserver(function(mutations) {
-            mutations.forEach(function(mutation) {
-                if (mutation.type === 'attributes' && mutation.attributeName === 'data-value') {
-                    console.log('📊 Slider changé:', element.getAttribute('data-value'));
-                    clearTimeout(calcTimeout);
-                    calcTimeout = setTimeout(() => calculateROI(), 300);
-                }
-            });
-        });
+    // Polling toutes les 100ms pour détecter les changements
+    setInterval(() => {
+        const sliderElements = document.querySelectorAll('[data-value]');
         
-        observer.observe(element, {
-            attributes: true,
-            attributeFilter: ['data-value']
+        sliderElements.forEach((element, index) => {
+            const currentValue = element.getAttribute('data-value');
+            const key = `slider_${index}`;
+            
+            // Si la valeur a changé
+            if (lastSliderValues[key] !== currentValue) {
+                console.log(`📊 Slider ${index} changé: ${lastSliderValues[key]} → ${currentValue}`);
+                lastSliderValues[key] = currentValue;
+                
+                // Déclencher le recalcul
+                clearTimeout(calcTimeout);
+                calcTimeout = setTimeout(() => {
+                    console.log('📊 Recalcul déclenché par slider');
+                    calculateROI();
+                }, 300);
+            }
         });
-    });
-    
-    console.log('👀 Observing', sliderElements.length, 'sliders');
+    }, 100); // Vérifier toutes les 100ms
 }
 
 function displayDefaultResults() {
