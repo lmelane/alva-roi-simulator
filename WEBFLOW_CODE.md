@@ -20,11 +20,46 @@ let calcTimeout = null;
 
 document.addEventListener('DOMContentLoaded', function() {
     console.log('🚀 Simulateur ROI initialisé (Sliders Webflow)');
+    
+    // Initialiser les valeurs par défaut
+    initializeDefaultValues();
+    
     displayDefaultResults();
     attachWebflowListeners();
     setupSliderObservers(); // Nouveau : Observer les sliders
     setTimeout(() => calculateROI(), 500);
 });
+
+// Initialiser les valeurs par défaut des inputs
+function initializeDefaultValues() {
+    const defaults = {
+        employees: 250,
+        processes: 3,
+        timePerTask: 2,
+        hourlyCost: 40,
+        currentAutomation: 15,
+        targetAutomation: 60
+    };
+    
+    Object.keys(defaults).forEach(id => {
+        const element = document.getElementById(id);
+        if (element && !element.value) {
+            // Pour les inputs normaux
+            if (element.tagName === 'INPUT') {
+                element.value = defaults[id];
+                console.log(`✅ Valeur par défaut ${id}:`, defaults[id]);
+            }
+            
+            // Pour les sliders Webflow avec data-value
+            const dataValueElement = element.querySelector('[data-value]') || 
+                                    element.closest('[data-value]');
+            if (dataValueElement && !dataValueElement.getAttribute('data-value')) {
+                dataValueElement.setAttribute('data-value', defaults[id]);
+                console.log(`✅ data-value par défaut ${id}:`, defaults[id]);
+            }
+        }
+    });
+}
 
 // Observer les changements des sliders Webflow
 function setupSliderObservers() {
