@@ -12,18 +12,45 @@
 ```html
 <script>
 // ============================================
-// SIMULATEUR ROI - WEBFLOW COMPATIBLE
+// SIMULATEUR ROI - COMPATIBLE SLIDERS WEBFLOW
 // ============================================
 
 const API_URL = 'https://alva-roi-simulator-production.up.railway.app';
 let calcTimeout = null;
 
 document.addEventListener('DOMContentLoaded', function() {
-    console.log('🚀 Simulateur ROI initialisé');
+    console.log('🚀 Simulateur ROI initialisé (Sliders Webflow)');
     displayDefaultResults();
     attachWebflowListeners();
+    setupSliderObservers(); // Nouveau : Observer les sliders
     setTimeout(() => calculateROI(), 500);
 });
+
+// Observer les changements des sliders Webflow
+function setupSliderObservers() {
+    // Trouver tous les éléments avec data-value
+    const sliderElements = document.querySelectorAll('[data-value]');
+    
+    sliderElements.forEach(element => {
+        // Observer les changements d'attribut data-value
+        const observer = new MutationObserver(function(mutations) {
+            mutations.forEach(function(mutation) {
+                if (mutation.type === 'attributes' && mutation.attributeName === 'data-value') {
+                    console.log('📊 Slider changé:', element.getAttribute('data-value'));
+                    clearTimeout(calcTimeout);
+                    calcTimeout = setTimeout(() => calculateROI(), 300);
+                }
+            });
+        });
+        
+        observer.observe(element, {
+            attributes: true,
+            attributeFilter: ['data-value']
+        });
+    });
+    
+    console.log('👀 Observing', sliderElements.length, 'sliders');
+}
 
 function displayDefaultResults() {
     const defaults = {
@@ -159,27 +186,43 @@ function animateValue(elementId, targetValue, suffix = '', prefix = '', formatNu
     requestAnimationFrame(update);
 }
 
+// Fonction getValue améliorée pour sliders Webflow
 function getValue(id) {
-    const el = document.getElementById(id);
+    // 1. Essayer de trouver l'élément avec l'ID
+    let el = document.getElementById(id);
+    
+    // 2. Si pas trouvé, chercher dans les data-name
+    if (!el) {
+        el = document.querySelector(`[data-name="${id}"]`);
+    }
+    
     if (!el) return null;
     
-    // Pour les selects
+    // 3. Pour les selects
     if (el.tagName === 'SELECT') {
         return el.options[el.selectedIndex]?.value || el.value;
     }
     
-    // Pour les sliders Webflow (chercher dans le parent)
-    const sliderWrapper = el.closest('.slider-value-frame-font-card-text-hd-md-text-hd-md-0');
-    if (sliderWrapper) {
-        const valueElement = sliderWrapper.querySelector('[data-value]');
-        if (valueElement) {
-            const dataValue = valueElement.getAttribute('data-value');
-            if (dataValue) return dataValue;
-        }
+    // 4. Chercher data-value dans l'élément ou ses enfants
+    let dataValue = el.getAttribute('data-value');
+    if (dataValue) return dataValue;
+    
+    // 5. Chercher dans les enfants
+    const childWithDataValue = el.querySelector('[data-value]');
+    if (childWithDataValue) {
+        dataValue = childWithDataValue.getAttribute('data-value');
+        if (dataValue) return dataValue;
     }
     
-    // Pour les inputs normaux
-    return el.value || el.getAttribute('value') || el.getAttribute('data-value');
+    // 6. Chercher dans le parent (pour les wrappers Webflow)
+    const parent = el.closest('[data-value]');
+    if (parent) {
+        dataValue = parent.getAttribute('data-value');
+        if (dataValue) return dataValue;
+    }
+    
+    // 7. Fallback sur .value
+    return el.value || el.getAttribute('value');
 }
 
 function updateDisplay(id, value) {
@@ -208,13 +251,28 @@ function showError(message) {
     }
 }
 
-// Debug
+// Debug amélioré
 window.debugSimulator = function() {
-    console.log('=== DEBUG ===');
-    console.log('sector:', getValue('sector'));
-    console.log('employees:', getValue('employees'));
-    console.log('processes:', getValue('processes'));
-    console.log('timePerTask:', getValue('timePerTask'));
+    console.log('=== DEBUG SIMULATEUR ===');
+    
+    // Tester chaque champ
+    ['sector', 'employees', 'processes', 'timePerTask'].forEach(id => {
+        const value = getValue(id);
+        console.log(`${id}:`, value);
+        
+        // Afficher aussi l'élément trouvé
+        const el = document.getElementById(id) || document.querySelector(`[data-name="${id}"]`);
+        if (el) {
+            console.log(`  → Element:`, el);
+            console.log(`  → data-value:`, el.getAttribute('data-value'));
+        }
+    });
+    
+    // Afficher tous les éléments avec data-value
+    console.log('\n=== SLIDERS WEBFLOW ===');
+    document.querySelectorAll('[data-value]').forEach((el, i) => {
+        console.log(`Slider ${i}:`, el.getAttribute('data-value'), el);
+    });
 };
 
 console.log('💡 Tape debugSimulator() pour débugger');
