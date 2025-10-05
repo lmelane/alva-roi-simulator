@@ -84,9 +84,39 @@ let calcTimeout = null;
 
 // Initialisation
 document.addEventListener('DOMContentLoaded', function() {
+    // Afficher des résultats par défaut immédiatement
+    displayDefaultResults();
+    
     attachEventListeners();
-    calculateROI(); // Calcul initial
+    calculateROI(); // Calcul avec l'API
 });
+
+// Afficher des résultats par défaut
+function displayDefaultResults() {
+    const defaultResults = {
+        roiPercentage: -16,
+        yearlySavings: 26168,
+        paybackWeeks: 30,
+        timeSaved: 24,
+        errorReduction: 85,
+        productivityGain: 32
+    };
+    
+    const setValue = (id, value) => {
+        const el = document.getElementById(id);
+        if (el) el.textContent = value;
+    };
+    
+    setValue('result-roi', (defaultResults.roiPercentage >= 0 ? '+' : '') + defaultResults.roiPercentage + '%');
+    setValue('result-savings', defaultResults.yearlySavings.toLocaleString('fr-FR') + ' €');
+    setValue('result-payback', defaultResults.paybackWeeks + ' sem');
+    setValue('result-time', defaultResults.timeSaved + 'h');
+    setValue('result-errors', '-' + defaultResults.errorReduction + '%');
+    setValue('result-productivity', '+' + defaultResults.productivityGain + '%');
+    
+    const resultsSection = document.getElementById('results-section');
+    if (resultsSection) resultsSection.style.display = 'block';
+}
 
 // Attacher les event listeners
 function attachEventListeners() {

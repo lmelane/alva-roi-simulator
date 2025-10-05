@@ -8,8 +8,44 @@ let calcTimeout = null;
 document.addEventListener('DOMContentLoaded', function() {
     initializeSliders();
     attachEventListeners();
-    calculateROI(); // Calcul initial
+    
+    // Afficher des résultats par défaut immédiatement
+    displayDefaultResults();
+    
+    // Puis calculer avec l'API
+    calculateROI();
 });
+
+// Afficher des résultats par défaut
+function displayDefaultResults() {
+    // Résultats basés sur : Finance, 250 employés, 3 processus, 2h/jour
+    const defaultResults = {
+        roiPercentage: -16,
+        yearlySavings: 26168,
+        paybackWeeks: 30,
+        timeSaved: 24,
+        errorReduction: 85,
+        productivityGain: 32
+    };
+    
+    // Afficher immédiatement sans animation
+    document.getElementById('result-roi').textContent = 
+        (defaultResults.roiPercentage >= 0 ? '+' : '') + defaultResults.roiPercentage + '%';
+    document.getElementById('result-savings').textContent = 
+        defaultResults.yearlySavings.toLocaleString('fr-FR') + ' €';
+    document.getElementById('result-payback').textContent = 
+        defaultResults.paybackWeeks + ' sem';
+    document.getElementById('result-time').textContent = 
+        defaultResults.timeSaved + 'h';
+    document.getElementById('result-errors').textContent = 
+        '-' + defaultResults.errorReduction + '%';
+    document.getElementById('result-productivity').textContent = 
+        '+' + defaultResults.productivityGain + '%';
+    
+    // Afficher la section résultats
+    const resultsSection = document.getElementById('results-section');
+    if (resultsSection) resultsSection.style.display = 'block';
+}
 
 // Initialiser les sliders avec affichage de valeur
 function initializeSliders() {
