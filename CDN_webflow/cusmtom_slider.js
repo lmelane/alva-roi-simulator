@@ -65,11 +65,14 @@
       // style de base pour scale/translate
       if (fillEl) {
         fillEl.style.transformOrigin = 'left center';
-        // évite clash si CSS externe force width; on bascule sur scaleX
         fillEl.style.width = '100%';
       }
       if (dotEl) {
-        dotEl.style.transform = 'translateX(0%)';
+        dotEl.style.position = 'absolute';
+        dotEl.style.left = '0';
+        dotEl.style.top = '50%';
+        dotEl.style.transform = 'translate(-50%, -50%)';
+        dotEl.style.transformOrigin = 'center';
       }
 
       const key =
@@ -108,7 +111,7 @@
 
       // transitions smooth par défaut
       applySmoothTransition(fillEl, ['transform']);
-      applySmoothTransition(dotEl,  ['transform']);
+      applySmoothTransition(dotEl,  ['left']);
 
       // Helpers valeurs
       let value = 0;
@@ -122,10 +125,14 @@
           removeTransition(fillEl); removeTransition(dotEl);
         } else {
           applySmoothTransition(fillEl, ['transform']);
-          applySmoothTransition(dotEl,  ['transform']);
+          applySmoothTransition(dotEl,  ['left']);
         }
         if (fillEl) fillEl.style.transform = `scaleX(${p})`;
-        if (dotEl)  dotEl.style.transform  = `translateX(${p*100}%)`;
+        if (dotEl) {
+          const xPos = p * 100;
+          dotEl.style.left = `${xPos}%`;
+          dotEl.style.transform = 'translate(-50%, -50%)';
+        }
         if (inputEl) inputEl.value = String(value.toFixed(decimals));
         if (mirror)  mirror.value   = String(value.toFixed(decimals));
         wrapper.setAttribute('data-value', String(value));
@@ -168,7 +175,7 @@
         // Réactiver les transitions après un drag
         if (wasDragging && hasMoved) {
           applySmoothTransition(fillEl, ['transform']);
-          applySmoothTransition(dotEl,  ['transform']);
+          applySmoothTransition(dotEl,  ['left']);
         }
       };
 
