@@ -16,8 +16,8 @@
     };
 
     // Timing & easing
-    const SLOW_MS = 1800; // encore plus lent que 1500ms
-    const EASE    = 'cubic-bezier(.22,.61,.36,1)'; // ease-out douce
+    const SMOOTH_MS = 600; // Animation fluide mais pas trop lente
+    const EASE = 'cubic-bezier(0.4, 0, 0.2, 1)'; // ease-in-out standard
     const REDUCED = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
 
     const clamp01 = (x)=> Math.max(0, Math.min(1, x));
@@ -38,13 +38,13 @@
     };
 
     // transitions via transform (meilleure perf)
-    const applySlowTransition = (el, props) => {
+    const applySmoothTransition = (el, props) => {
       if (!el) return;
-      const base = REDUCED ? '0ms linear' : `${SLOW_MS}ms ${EASE}`;
+      const base = REDUCED ? '0ms linear' : `${SMOOTH_MS}ms ${EASE}`;
       el.style.transition = (props || ['transform']).map(p => `${p} ${base}`).join(', ');
       el.style.willChange = (props || ['transform']).join(', ');
     };
-    const removeTransition = (el) => { if(el){ el.style.transition = 'none'; } };
+    const removeTransition = (el) => { if(el){ el.style.transition = 'none'; el.style.willChange = 'auto'; } };
 
     // Accessibilité: applique les attributs ARIA sur le wrapper
     const applyAria = (wrapper, {min, max, step, value}) => {
@@ -106,9 +106,9 @@
       wrapper.style.touchAction = wrapper.style.touchAction || 'none';
       [wrapper, fillWrapper, dotEl].forEach(el => { if (el) el.style.pointerEvents = 'auto'; });
 
-      // transitions lentes (au repos / sur click)
-      applySlowTransition(fillEl, ['transform']);
-      applySlowTransition(dotEl,  ['transform']);
+      // transitions smooth par défaut
+      applySmoothTransition(fillEl, ['transform']);
+      applySmoothTransition(dotEl,  ['transform']);
 
       // Helpers valeurs
       let value = 0;
@@ -121,8 +121,8 @@
         if (!animate || REDUCED) {
           removeTransition(fillEl); removeTransition(dotEl);
         } else {
-          applySlowTransition(fillEl, ['transform']);
-          applySlowTransition(dotEl,  ['transform']);
+          applySmoothTransition(fillEl, ['transform']);
+          applySmoothTransition(dotEl,  ['transform']);
         }
         if (fillEl) fillEl.style.transform = `scaleX(${p})`;
         if (dotEl)  dotEl.style.transform  = `translateX(${p*100}%)`;
@@ -143,10 +143,12 @@
       };
 
       let dragging = false;
+      let hasMoved = false;
 
       const onDown = (e) => {
         if (e.button !== undefined && e.button !== 0) return;
         dragging = true;
+        hasMoved = false;
         wrapper.setPointerCapture?.(e.pointerId);
         document.body.style.userSelect = 'none';
         // pendant le drag → pas de transition pour suivre le curseur
@@ -156,12 +158,18 @@
       };
       const onMove = (e) => {
         if (!dragging) return;
+        hasMoved = true;
         setValue(valueFromX(e.clientX), /*animate*/false);
       };
       const onUp = () => {
+        const wasDragging = dragging;
         dragging = false;
         document.body.style.userSelect = '';
-        // ne remet pas de transition ici : on la remettra sur le prochain click / set programmatique
+        // Réactiver les transitions après un drag
+        if (wasDragging && hasMoved) {
+          applySmoothTransition(fillEl, ['transform']);
+          applySmoothTransition(dotEl,  ['transform']);
+        }
       };
 
       [wrapper, fillWrapper, dotEl].forEach(el => {
@@ -171,11 +179,12 @@
       wrapper.addEventListener('pointerup', onUp, {passive:true});
       wrapper.addEventListener('pointercancel', onUp);
 
-      // Click simple (sans drag) → animation lente
+      // Click simple (sans drag) → animation smooth
       wrapper.addEventListener('click', (e) => {
-        if (!dragging && (e.button === 0 || e.button === undefined)) {
+        if (!hasMoved && (e.button === 0 || e.button === undefined)) {
           setValue(valueFromX(e.clientX), /*animate*/true);
         }
+        hasMoved = false; // Reset pour le prochain click
       });
 
       // Clavier (accessibilité)
