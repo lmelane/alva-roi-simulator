@@ -34,17 +34,19 @@
       };
   
       // applique une transition très lente aux éléments visuels
-      const SLOW_MS = 1500;
+      const SLOW_MS = 1500; // << beaucoup plus lent
       const applySlowTransition = (el) => {
         if (!el) return;
-        const base = `${SLOW_MS}ms cubic-bezier(.25,.8,.25,1)`;
+        // width pour le fill, left pour le dot
+        const base = ` ${SLOW_MS}ms cubic-bezier(.25,.8,.25,1)`;
         const props = [];
-        props.push(`width ${base}`);
-        props.push(`left ${base}`);
+        // on pose les deux au cas où (selon l'élément)
+        props.push('width' + base);
+        props.push('left'  + base);
         el.style.transition = props.join(', ');
         el.style.willChange = 'width, left';
       };
-      const removeTransition = (el) => { if(el){ el.style.transition = 'none'; el.style.willChange = 'auto'; } };
+      const removeTransition = (el) => { if(el){ el.style.transition = 'none'; } };
   
       document.querySelectorAll('.range-wrapper').forEach((wrapper) => {
         // éléments constitutifs
