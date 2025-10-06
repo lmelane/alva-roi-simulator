@@ -79,7 +79,12 @@ class Scroll extends Lenis {
   }
 }
 
-window.SmoothScroll = new Scroll();
+// Initialiser après que Lenis soit chargé
+if (typeof Lenis !== 'undefined') {
+  window.SmoothScroll = new Scroll();
+} else {
+  console.error('Lenis not loaded! Make sure to load Lenis library before this script.');
+}
 
 // Video autoplay on scroll
 document.addEventListener('DOMContentLoaded', function() {
