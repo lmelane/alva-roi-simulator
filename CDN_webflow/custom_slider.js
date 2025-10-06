@@ -65,10 +65,22 @@
 
     // Initialiser tous les sliders
     document.querySelectorAll('.range-wrapper').forEach((wrapper) => {
-      const sliderEl = wrapper.querySelector('.slider-element');
+      // Chercher l'élément qui servira de slider (fill-wrapper ou créer un div)
+      let sliderEl = wrapper.querySelector('.fill-wrapper');
       const inputEl = wrapper.querySelector('input.number');
       
-      if (!sliderEl || !inputEl) return;
+      if (!sliderEl || !inputEl) {
+        console.warn('Structure incomplète pour slider:', wrapper);
+        return;
+      }
+      
+      // Si fill-wrapper a déjà du contenu, créer un nouveau div pour noUiSlider
+      if (sliderEl.children.length > 0) {
+        const newSlider = document.createElement('div');
+        newSlider.className = 'nouislider-element';
+        sliderEl.appendChild(newSlider);
+        sliderEl = newSlider;
+      }
 
       // Déterminer la config
       const sliderId = inputEl.id || inputEl.name || '';
