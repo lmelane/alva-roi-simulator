@@ -18,7 +18,6 @@
     }
 
     function init() {
-        console.log('🚀 Simulateur ROI initialisé (CDN)');
         initializeDefaultValues();
         displayDefaultResults();
         attachWebflowListeners();
@@ -42,14 +41,12 @@
             if (element && !element.value) {
                 if (element.tagName === 'INPUT') {
                     element.value = defaults[id];
-                    console.log(`✅ Valeur par défaut ${id}:`, defaults[id]);
                 }
                 
                 const dataValueElement = element.querySelector('[data-value]') || 
                                         element.closest('[data-value]');
                 if (dataValueElement && !dataValueElement.getAttribute('data-value')) {
                     dataValueElement.setAttribute('data-value', defaults[id]);
-                    console.log(`✅ data-value par défaut ${id}:`, defaults[id]);
                 }
             }
         });
@@ -57,8 +54,6 @@
 
     // Observer les sliders avec polling
     function setupSliderObservers() {
-        console.log('👀 Démarrage du polling des sliders');
-        
         setInterval(() => {
             const sliderElements = document.querySelectorAll('[data-value]');
             
@@ -67,12 +62,10 @@
                 const key = `slider_${index}`;
                 
                 if (lastSliderValues[key] !== currentValue) {
-                    console.log(`📊 Slider ${index} changé: ${lastSliderValues[key]} → ${currentValue}`);
                     lastSliderValues[key] = currentValue;
                     
                     clearTimeout(calcTimeout);
                     calcTimeout = setTimeout(() => {
-                        console.log('📊 Recalcul déclenché par slider');
                         calculateROI();
                     }, 50);
                 }
@@ -109,25 +102,14 @@
 
         fields.forEach(fieldId => {
             const field = document.getElementById(fieldId);
-            if (!field) {
-                console.warn(`⚠️ Champ ${fieldId} non trouvé`);
-                return;
-            }
-
-            console.log(`✅ Listener attaché sur: ${fieldId}`);
+            if (!field) return;
 
             ['change', 'input', 'blur', 'keyup'].forEach(eventType => {
                 field.addEventListener(eventType, function() {
-                    try {
-                        console.log(`🎯 Event ${eventType} sur ${fieldId}, valeur:`, this.value || this.getAttribute('data-value'));
-                        clearTimeout(calcTimeout);
-                        calcTimeout = setTimeout(() => {
-                            console.log('📊 Recalcul déclenché par:', fieldId);
-                            calculateROI();
-                        }, 50);
-                    } catch (error) {
-                        console.error(`❌ Erreur event listener ${fieldId}:`, error);
-                    }
+                    clearTimeout(calcTimeout);
+                    calcTimeout = setTimeout(() => {
+                        calculateROI();
+                    }, 50);
                 });
             });
         });
@@ -143,8 +125,6 @@
 
     // Calcul ROI
     async function calculateROI() {
-        console.log('🔄 calculateROI() appelé');
-        
         try {
             const sector = getValue('sector') || 'general';
             const employees = parseInt(getValue('employees')) || 250;
@@ -155,14 +135,9 @@
             const currentAutomation = parseInt(getValue('currentAutomation')) || null;
             const targetAutomation = parseInt(getValue('targetAutomation')) || null;
 
-            console.log('📊 Valeurs récupérées:', { sector, employees, processes, timePerTask });
-
             if (!sector || !employees || !processes || !timePerTask) {
-                console.warn('⚠️ Paramètres manquants:', { sector, employees, processes, timePerTask });
                 return;
             }
-
-            console.log('📤 Envoi API:', { sector, employees, processes, timePerTask });
 
             const requestData = {
                 sector, employees, processes, timePerTask, maturity
@@ -181,15 +156,12 @@
             const data = await response.json();
 
             if (data.success) {
-                console.log('✅ Résultats:', data.data.results);
                 displayResults(data.data.results);
             } else {
                 showError('Erreur de calcul');
             }
 
         } catch (error) {
-            console.error('❌ Erreur complète:', error);
-            console.error('❌ Stack:', error.stack);
             showError('Erreur de connexion');
             return;
         }
@@ -198,7 +170,6 @@
     // Afficher résultats
     function displayResults(results) {
         try {
-            console.log('📊 displayResults appelé avec:', results);
             hideError();
             showResults();
             animateValue('result-roi', results.roiPercentage, '%', results.roiPercentage >= 0 ? '+' : '');
@@ -207,10 +178,8 @@
             animateValue('result-time', results.timeSaved, 'h');
             animateValue('result-errors', results.errorReduction, '%', '-');
             animateValue('result-productivity', results.productivityGain, '%', '+');
-            console.log('✅ displayResults terminé');
         } catch (error) {
-            console.error('❌ Erreur dans displayResults:', error);
-            console.error('❌ Stack:', error.stack);
+            // Silent fail
         }
     }
 
@@ -218,10 +187,7 @@
     function animateValue(elementId, targetValue, suffix = '', prefix = '', formatNumber = false) {
         try {
             const element = document.getElementById(elementId);
-            if (!element) {
-                console.warn(`⚠️ Element ${elementId} non trouvé pour animation`);
-                return;
-            }
+            if (!element) return;
 
             const duration = 400;
             const startTime = performance.now();
@@ -243,13 +209,13 @@
                         requestAnimationFrame(update);
                     }
                 } catch (error) {
-                    console.error(`❌ Erreur animation ${elementId}:`, error);
+                    // Silent fail
                 }
             }
 
             requestAnimationFrame(update);
         } catch (error) {
-            console.error(`❌ Erreur animateValue ${elementId}:`, error);
+            // Silent fail
         }
     }
 
@@ -312,7 +278,7 @@
         }
     }
 
-    // Debug
+    // Debug (disponible via console)
     window.debugSimulator = function() {
         console.log('=== DEBUG SIMULATEUR ===');
         
@@ -332,7 +298,5 @@
             console.log(`Slider ${i}:`, el.getAttribute('data-value'), el);
         });
     };
-
-    console.log('💡 Tape debugSimulator() pour débugger');
 
 })();
