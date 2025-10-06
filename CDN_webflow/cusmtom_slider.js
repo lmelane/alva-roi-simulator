@@ -91,6 +91,12 @@
         wrapper.style.touchAction = wrapper.style.touchAction || 'none';
         [wrapper, fillWrapper, dotEl].forEach(el => { if (el) el.style.pointerEvents = 'auto'; });
   
+        // Reset initial du dot (supprime transform Webflow)
+        if (dotEl) {
+          dotEl.style.transform = 'none';
+          dotEl.style.position = 'absolute';
+        }
+  
         // Transitions lentes (au repos / sur click)
         applySlowTransition(fillEl);
         applySlowTransition(dotEl);
@@ -99,7 +105,11 @@
         const setUIInstant = (value) => {
           const p = (value - min) / (max - min);
           if (fillEl) fillEl.style.width = (p*100) + '%';
-          if (dotEl)  dotEl.style.left  = (p*100) + '%';
+          if (dotEl) {
+            dotEl.style.left = (p*100) + '%';
+            // Force suppression du transform Webflow
+            dotEl.style.transform = 'none';
+          }
           if (inputEl) inputEl.value = String(value);
           if (mirror)  mirror.value   = String(value);
           wrapper.setAttribute('data-value', String(value));
