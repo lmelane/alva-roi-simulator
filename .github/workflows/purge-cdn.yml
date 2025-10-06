@@ -1,0 +1,17 @@
+name: Purge CDN Cache
+
+on:
+  push:
+    branches:
+      - main
+    paths:
+      - 'webflow-cdn.js'
+
+jobs:
+  purge:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Purge jsDelivr Cache
+        run: |
+          curl -X POST https://purge.jsdelivr.net/gh/lmelane/alva-roi-simulator@main/webflow-cdn.js
+          echo "✅ Cache CDN purgé !"
