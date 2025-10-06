@@ -1,238 +1,189 @@
 (function initSlider(){
-  const ready = (fn) => window.Webflow ? window.Webflow.push(fn)
-    : (document.readyState !== 'loading' ? fn()
-      : document.addEventListener('DOMContentLoaded', fn));
-
-  ready(() => {
-    const DEFAULT_MIN=0, DEFAULT_MAX=400, DEFAULT_STEP=1;
-
-    const OVERRIDES = {
-      employees:         {min:1,   max:10000, step:1},
-      processes:         {min:1,   max:50,    step:1},
-      timePerTask:       {min:0.1, max:24,    step:0.1},
-      hourlyCost:        {min:20,  max:500,   step:1},
-      currentAutomation: {min:0,   max:100,   step:1},
-      targetAutomation:  {min:0,   max:100,   step:1},
-    };
-
-    // Timing & easing
-    const SMOOTH_MS = 600; // Animation fluide mais pas trop lente
-    const EASE = 'cubic-bezier(0.4, 0, 0.2, 1)'; // ease-in-out standard
-    const REDUCED = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
-
-    const clamp01 = (x)=> Math.max(0, Math.min(1, x));
-    const roundToStep = (v, step, min)=> Math.round((v-min)/step)*step + min;
-
-    // verrouille un input pour le rendre totalement inerte
-    const hardDisable = (el) => {
-      if (!el) return;
-      el.disabled = true;
-      el.setAttribute('disabled','');
-      el.setAttribute('tabindex','-1');
-      el.setAttribute('aria-disabled','true');
-      el.style.pointerEvents = 'none';
-      el.style.userSelect = 'none';
-      el.style.background = 'transparent';
-      el.style.border = 'none';
-      el.style.opacity = '1';
-    };
-
-    // transitions via transform (meilleure perf)
-    const applySmoothTransition = (el, props) => {
-      if (!el) return;
-      const base = REDUCED ? '0ms linear' : `${SMOOTH_MS}ms ${EASE}`;
-      el.style.transition = (props || ['transform']).map(p => `${p} ${base}`).join(', ');
-      el.style.willChange = (props || ['transform']).join(', ');
-    };
-    const removeTransition = (el) => { if(el){ el.style.transition = 'none'; el.style.willChange = 'auto'; } };
-
-    // Accessibilité: applique les attributs ARIA sur le wrapper
-    const applyAria = (wrapper, {min, max, step, value}) => {
-      wrapper.setAttribute('role','slider');
-      wrapper.setAttribute('tabindex','0'); // focus clavier
-      wrapper.setAttribute('aria-valuemin', String(min));
-      wrapper.setAttribute('aria-valuemax', String(max));
-      wrapper.setAttribute('aria-valuenow', String(value));
-      wrapper.setAttribute('aria-valuetext', String(value));
-    };
-
-    document.querySelectorAll('.range-wrapper').forEach((wrapper) => {
-      const fillWrapper = wrapper.querySelector('.fill-wrapper');
-      const fillEl = wrapper.querySelector('.input-fill') || fillWrapper;
-      const dotEl  = wrapper.querySelector('.custom-dot-container');
-      const inputEl = wrapper.querySelector('input.number');
-
-      // style de base pour scale/translate
-      if (fillEl) {
-        fillEl.style.transformOrigin = 'left center';
-        fillEl.style.width = '100%';
-      }
-      if (dotEl) {
-        // Force reset de tous les styles
-        dotEl.style.cssText = '';
-        dotEl.style.position = 'absolute';
-        dotEl.style.left = '0';
-        dotEl.style.top = '50%';
-        dotEl.style.transform = 'translate(-50%, -50%) !important';
-        dotEl.style.transformOrigin = 'center';
-        dotEl.style.willChange = 'left';
-      }
-
-      const key =
-        (wrapper.id && wrapper.id.trim()) ||
-        (inputEl && inputEl.id && inputEl.id.trim()) ||
-        (inputEl && inputEl.name && inputEl.name.trim()) || '';
-
-      let min  = Number(wrapper.getAttribute('data-min')  || DEFAULT_MIN);
-      let max  = Number(wrapper.getAttribute('data-max')  || DEFAULT_MAX);
-      let step = Number(wrapper.getAttribute('data-step') || DEFAULT_STEP);
-
-      if (key && OVERRIDES[key]) {
-        const o = OVERRIDES[key];
-        if (typeof o.min  === 'number') min  = o.min;
-        if (typeof o.max  === 'number') max  = o.max;
-        if (typeof o.step === 'number') step = o.step;
-      }
-
-      // input hidden miroir pour la soumission
-      let mirror = wrapper.querySelector('input.mirror[type="hidden"]');
-      if (!mirror) {
-        mirror = document.createElement('input');
-        mirror.type = 'hidden';
-        mirror.className = 'mirror';
-        const baseName = (inputEl && inputEl.name) ? (inputEl.name + '_value') : 'slider_value';
-        mirror.name = baseName;
-        (inputEl && inputEl.parentElement ? inputEl.parentElement : wrapper).appendChild(mirror);
-      }
-
-      // input visible inerte
-      hardDisable(inputEl);
-
-      // Interactions
-      wrapper.style.touchAction = wrapper.style.touchAction || 'none';
-      [wrapper, fillWrapper, dotEl].forEach(el => { if (el) el.style.pointerEvents = 'auto'; });
-
-      // transitions smooth par défaut
-      applySmoothTransition(fillEl, ['transform']);
-      applySmoothTransition(dotEl,  ['left']);
-
-      // Helpers valeurs
-      let value = 0;
-      const decimals = (String(step).split('.')[1] || '').length;
-
-      const setValue = (v, animate=true) => {
-        value = Math.max(min, Math.min(max, Number(v)));
-        const p = (value - min) / (max - min);
-        // animation
-        if (!animate || REDUCED) {
-          removeTransition(fillEl); removeTransition(dotEl);
-        } else {
-          applySmoothTransition(fillEl, ['transform']);
-          applySmoothTransition(dotEl,  ['left']);
+    const ready = (fn) => window.Webflow ? window.Webflow.push(fn)
+      : (document.readyState !== 'loading' ? fn()
+        : document.addEventListener('DOMContentLoaded', fn));
+  
+    ready(() => {
+      const DEFAULT_MIN=0, DEFAULT_MAX=400, DEFAULT_STEP=1;
+  
+      // Overrides par ID
+      const OVERRIDES = {
+        employees:         {min:1,   max:10000, step:1},
+        processes:         {min:1,   max:50,    step:1},
+        timePerTask:       {min:0.1, max:24,    step:0.1},
+        hourlyCost:        {min:20,  max:500,   step:1},
+        currentAutomation: {min:0,   max:100,   step:1},
+        targetAutomation:  {min:0,   max:100,   step:1},
+      };
+  
+      const clamp01 = (x)=> Math.max(0, Math.min(1, x));
+      const roundToStep = (v, step, min)=> Math.round((v-min)/step)*step + min;
+  
+      // verrouille un input pour le rendre totalement inerte
+      const hardDisable = (el) => {
+        if (!el) return;
+        el.disabled = true;
+        el.setAttribute('disabled','');
+        el.setAttribute('tabindex','-1');
+        el.setAttribute('aria-disabled','true');
+        el.style.pointerEvents = 'none';
+        el.style.userSelect = 'none';
+        el.style.background = 'transparent';
+        el.style.border = 'none';
+        el.style.opacity = '1';
+      };
+  
+      // applique une transition très lente aux éléments visuels
+      const SLOW_MS = 1500;
+      const applySlowTransition = (el) => {
+        if (!el) return;
+        const base = `${SLOW_MS}ms cubic-bezier(.25,.8,.25,1)`;
+        const props = [];
+        props.push(`width ${base}`);
+        props.push(`left ${base}`);
+        el.style.transition = props.join(', ');
+        el.style.willChange = 'width, left';
+      };
+      const removeTransition = (el) => { if(el){ el.style.transition = 'none'; el.style.willChange = 'auto'; } };
+  
+      document.querySelectorAll('.range-wrapper').forEach((wrapper) => {
+        // éléments constitutifs
+        const fillWrapper = wrapper.querySelector('.fill-wrapper');
+        const fillEl = wrapper.querySelector('.input-fill') || fillWrapper;
+        const dotEl  = wrapper.querySelector('.custom-dot-container');
+        const inputEl = wrapper.querySelector('input.number');
+  
+        // Détermination de la clé d’override (id du wrapper, ou id/name de l’input)
+        const key =
+          (wrapper.id && wrapper.id.trim()) ||
+          (inputEl && inputEl.id && inputEl.id.trim()) ||
+          (inputEl && inputEl.name && inputEl.name.trim()) || '';
+  
+        // Lecture min/max/step (data-*, sinon defaults), puis override par ID si dispo
+        let min  = Number(wrapper.getAttribute('data-min')  || DEFAULT_MIN);
+        let max  = Number(wrapper.getAttribute('data-max')  || DEFAULT_MAX);
+        let step = Number(wrapper.getAttribute('data-step') || DEFAULT_STEP);
+  
+        if (key && OVERRIDES[key]) {
+          const o = OVERRIDES[key];
+          if (typeof o.min  === 'number') min  = o.min;
+          if (typeof o.max  === 'number') max  = o.max;
+          if (typeof o.step === 'number') step = o.step;
         }
-        if (fillEl) fillEl.style.transform = `scaleX(${p})`;
-        if (dotEl) {
-          const xPos = p * 100;
-          dotEl.style.left = `${xPos}%`;
-          // Ne jamais changer le transform (toujours centré)
-          dotEl.style.setProperty('transform', 'translate(-50%, -50%)', 'important');
+  
+        // input hidden miroir pour la soumission
+        let mirror = wrapper.querySelector('input.mirror[type="hidden"]');
+        if (!mirror) {
+          mirror = document.createElement('input');
+          mirror.type = 'hidden';
+          mirror.className = 'mirror';
+          const baseName = (inputEl && inputEl.name) ? (inputEl.name + '_value') : 'slider_value';
+          mirror.name = baseName;
+          (inputEl && inputEl.parentElement ? inputEl.parentElement : wrapper).appendChild(mirror);
         }
-        if (inputEl) inputEl.value = String(value.toFixed(decimals));
-        if (mirror)  mirror.value   = String(value.toFixed(decimals));
-        wrapper.setAttribute('data-value', String(value));
-        // ARIA live values
-        wrapper.setAttribute('aria-valuenow', String(value));
-        wrapper.setAttribute('aria-valuetext', String(value));
-      };
-
-      const valueFromX = (clientX) => {
-        const rect = wrapper.getBoundingClientRect();
-        const frac = clamp01((clientX - rect.left) / rect.width);
-        const raw  = min + frac * (max - min);
-        const snapped = Math.max(min, Math.min(max, roundToStep(raw, step, min)));
-        return Number(snapped.toFixed(decimals));
-      };
-
-      let dragging = false;
-      let hasMoved = false;
-
-      const onDown = (e) => {
-        if (e.button !== undefined && e.button !== 0) return;
-        dragging = true;
-        hasMoved = false;
-        wrapper.setPointerCapture?.(e.pointerId);
-        document.body.style.userSelect = 'none';
-        // pendant le drag → pas de transition pour suivre le curseur
-        removeTransition(fillEl);
-        removeTransition(dotEl);
-        setValue(valueFromX(e.clientX), /*animate*/false);
-      };
-      const onMove = (e) => {
-        if (!dragging) return;
-        hasMoved = true;
-        setValue(valueFromX(e.clientX), /*animate*/false);
-      };
-      const onUp = () => {
-        const wasDragging = dragging;
-        dragging = false;
-        document.body.style.userSelect = '';
-        // Réactiver les transitions après un drag
-        if (wasDragging && hasMoved) {
-          applySmoothTransition(fillEl, ['transform']);
-          applySmoothTransition(dotEl,  ['left']);
-        }
-      };
-
-      [wrapper, fillWrapper, dotEl].forEach(el => {
-        if (el) el.addEventListener('pointerdown', onDown, {passive:true});
+  
+        // input visible inerte
+        hardDisable(inputEl);
+  
+        // Interactions
+        wrapper.style.touchAction = wrapper.style.touchAction || 'none';
+        [wrapper, fillWrapper, dotEl].forEach(el => { if (el) el.style.pointerEvents = 'auto'; });
+  
+        // Transitions lentes (au repos / sur click)
+        applySlowTransition(fillEl);
+        applySlowTransition(dotEl);
+  
+        // rendu UI
+        const setUIInstant = (value) => {
+          const p = (value - min) / (max - min);
+          if (fillEl) fillEl.style.width = (p*100) + '%';
+          if (dotEl)  dotEl.style.left  = (p*100) + '%';
+          if (inputEl) inputEl.value = String(value);
+          if (mirror)  mirror.value   = String(value);
+          wrapper.setAttribute('data-value', String(value));
+        };
+  
+        const setUISlow = (value) => {
+          // transitions déjà en place → simple set
+          setUIInstant(value);
+        };
+  
+        const valueFromX = (clientX) => {
+          const rect = wrapper.getBoundingClientRect();
+          const frac = clamp01((clientX - rect.left) / rect.width);
+          const raw  = min + frac * (max - min);
+          const snapped = Math.max(min, Math.min(max, roundToStep(raw, step, min)));
+          // éviter d'afficher trop de décimales quand step est décimal
+          const decimals = (String(step).split('.')[1] || '').length;
+          return Number(snapped.toFixed(decimals));
+        };
+  
+        let dragging = false;
+  
+        const onDown = (e) => {
+          if (e.button !== undefined && e.button !== 0) return;
+          dragging = true;
+          wrapper.setPointerCapture?.(e.pointerId);
+          document.body.style.userSelect = 'none';
+          // Pendant le drag → pas de transition pour suivre le curseur
+          removeTransition(fillEl);
+          removeTransition(dotEl);
+          setUIInstant(valueFromX(e.clientX));
+        };
+        const onMove = (e) => {
+          if (!dragging) return;
+          setUIInstant(valueFromX(e.clientX));
+        };
+        const onUp = () => {
+          dragging = false;
+          document.body.style.userSelect = '';
+          // on réactive la transition lente pour les changements futurs
+          applySlowTransition(fillEl);
+          applySlowTransition(dotEl);
+        };
+  
+        [wrapper, fillWrapper, dotEl].forEach(el => {
+          if (el) el.addEventListener('pointerdown', onDown);
+        });
+        wrapper.addEventListener('pointermove', onMove);
+        wrapper.addEventListener('pointerup', onUp);
+        wrapper.addEventListener('pointercancel', onUp);
+  
+        // Click simple (sans drag) → animation lente
+        wrapper.addEventListener('click', (e) => {
+          if (!dragging && (e.button === 0 || e.button === undefined)) {
+            applySlowTransition(fillEl);
+            applySlowTransition(dotEl);
+            setUISlow(valueFromX(e.clientX));
+          }
+        });
+  
+        // Valeur initiale
+        const initial = Number((inputEl && inputEl.value) || wrapper.getAttribute('data-value')) ;
+        const startVal = Number.isFinite(initial) ? Math.max(min, Math.min(max, initial)) : min;
+        setUIInstant(startVal); // premier paint immédiat
+  
+        // Recalage au resize (sans animation, puis on remet la transition)
+        window.addEventListener('resize', () => {
+          removeTransition(fillEl);
+          removeTransition(dotEl);
+          const v = Number(wrapper.getAttribute('data-value')) || min;
+          setUIInstant(v);
+          // petit rafraîchissement async pour réactiver la transition
+          requestAnimationFrame(() => {
+            applySlowTransition(fillEl);
+            applySlowTransition(dotEl);
+          });
+        });
       });
-      wrapper.addEventListener('pointermove', onMove, {passive:true});
-      wrapper.addEventListener('pointerup', onUp, {passive:true});
-      wrapper.addEventListener('pointercancel', onUp);
-
-      // Click simple (sans drag) → animation smooth
-      wrapper.addEventListener('click', (e) => {
-        if (!hasMoved && (e.button === 0 || e.button === undefined)) {
-          setValue(valueFromX(e.clientX), /*animate*/true);
-        }
-        hasMoved = false; // Reset pour le prochain click
+  
+      // Si Webflow recharge dynamiquement des blocs
+      const mo = new MutationObserver(() => {
+        document.querySelectorAll('input.number:not([disabled])').forEach(el => {
+          // s'assurer que l'input reste inerte
+          el && el.tagName === 'INPUT' && hardDisable(el);
+        });
       });
-
-      // Clavier (accessibilité)
-      wrapper.addEventListener('keydown', (e) => {
-        const big = Math.max(step, (max-min)/10);
-        let delta = 0;
-        if (e.key === 'ArrowLeft' || e.key === 'ArrowDown') delta = -step;
-        else if (e.key === 'ArrowRight' || e.key === 'ArrowUp') delta = +step;
-        else if (e.key === 'PageDown') delta = -big;
-        else if (e.key === 'PageUp')   delta = +big;
-        else if (e.key === 'Home')     { setValue(min, true); e.preventDefault(); return; }
-        else if (e.key === 'End')      { setValue(max, true); e.preventDefault(); return; }
-        if (delta !== 0) {
-          setValue(roundToStep(value + delta, step, min), true);
-          e.preventDefault();
-        }
-      });
-
-      // Valeur initiale
-      const initial = Number((inputEl && inputEl.value) || wrapper.getAttribute('data-value'));
-      const startVal = Number.isFinite(initial) ? Math.max(min, Math.min(max, initial)) : min;
-      setValue(startVal, /*animate*/false);
-      applyAria(wrapper, {min, max, step, value:startVal});
-
-      // Recalage au resize (sans animation, puis on remettra la transition au prochain click)
-      window.addEventListener('resize', () => {
-        const v = Number(wrapper.getAttribute('data-value')) || min;
-        setValue(v, /*animate*/false);
-      });
+      mo.observe(document.body, { childList: true, subtree: true });
     });
-
-    // Si Webflow recharge dynamiquement des blocs
-    const mo = new MutationObserver(() => {
-      document.querySelectorAll('input.number:not([disabled])').forEach(el => {
-        el && el.tagName === 'INPUT' && hardDisable(el);
-      });
-    });
-    mo.observe(document.body, { childList: true, subtree: true });
-  });
-})();
+  })();
