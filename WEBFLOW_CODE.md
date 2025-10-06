@@ -80,12 +80,12 @@ function setupSliderObservers() {
                 console.log(`📊 Slider ${index} changé: ${lastSliderValues[key]} → ${currentValue}`);
                 lastSliderValues[key] = currentValue;
                 
-                // Déclencher le recalcul
+                // Déclencher le recalcul INSTANTANÉ
                 clearTimeout(calcTimeout);
                 calcTimeout = setTimeout(() => {
                     console.log('📊 Recalcul déclenché par slider');
                     calculateROI();
-                }, 300);
+                }, 50); // Réduit à 50ms pour être quasi-instantané
             }
         });
     }, 100); // Vérifier toutes les 100ms
@@ -133,7 +133,7 @@ function attachWebflowListeners() {
                     calcTimeout = setTimeout(() => {
                         console.log('📊 Recalcul déclenché par:', fieldId);
                         calculateROI();
-                    }, 300);
+                    }, 50); // Réduit à 50ms pour être quasi-instantané
                 } catch (error) {
                     console.error(`❌ Erreur event listener ${fieldId}:`, error);
                 }
@@ -231,7 +231,7 @@ function animateValue(elementId, targetValue, suffix = '', prefix = '', formatNu
             return;
         }
 
-        const duration = 1000;
+        const duration = 400; // Réduit de 1000ms à 400ms pour être plus rapide
         const startTime = performance.now();
 
         function update(currentTime) {
