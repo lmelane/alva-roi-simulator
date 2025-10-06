@@ -68,11 +68,14 @@
         fillEl.style.width = '100%';
       }
       if (dotEl) {
+        // Force reset de tous les styles
+        dotEl.style.cssText = '';
         dotEl.style.position = 'absolute';
         dotEl.style.left = '0';
         dotEl.style.top = '50%';
-        dotEl.style.transform = 'translate(-50%, -50%)';
+        dotEl.style.transform = 'translate(-50%, -50%) !important';
         dotEl.style.transformOrigin = 'center';
+        dotEl.style.willChange = 'left';
       }
 
       const key =
@@ -131,7 +134,8 @@
         if (dotEl) {
           const xPos = p * 100;
           dotEl.style.left = `${xPos}%`;
-          dotEl.style.transform = 'translate(-50%, -50%)';
+          // Ne jamais changer le transform (toujours centré)
+          dotEl.style.setProperty('transform', 'translate(-50%, -50%)', 'important');
         }
         if (inputEl) inputEl.value = String(value.toFixed(decimals));
         if (mirror)  mirror.value   = String(value.toFixed(decimals));
