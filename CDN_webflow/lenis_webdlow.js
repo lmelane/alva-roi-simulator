@@ -1,5 +1,6 @@
-<script src="https://uploads-ssl.webflow.com/63fa6f365080594bdfd4772e/6410acdac3104be96977ab26_lenis-offbrand-v1.txt"></script>
-<script>
+// Lenis Smooth Scroll pour Webflow
+// Dépendance : Lenis doit être chargé avant ce script
+
 class Scroll extends Lenis {
   constructor() {
     super({
@@ -79,9 +80,8 @@ class Scroll extends Lenis {
 }
 
 window.SmoothScroll = new Scroll();
-</script>
 
-<script>
+// Video autoplay on scroll
 document.addEventListener('DOMContentLoaded', function() {
   const video = document.getElementById('video');
   const videoSection = document.getElementById('animation-video');
